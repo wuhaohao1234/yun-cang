@@ -1,0 +1,85 @@
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:wms/models/storage/rkd_model.dart';
+// import 'package:wms/network/http_services.dart';
+// import 'package:wms/utils/easy_loading_util.dart';
+// import 'package:wms/utils/toast_util.dart';
+
+// import '../../../common/baseWidgets/wv_picker_time.dart';
+// import '../../../common/baseWidgets/wv_set_up_widget.dart';
+// import '../../../utils/wms_util.dart';
+
+// class CSYrkPageController extends GetxController {
+//   int pageSize = 10;
+//   int pageNum = 1;
+//   var dataSource = RxList<RkdModel>();
+//   RxString dateTime = ''.obs;
+//   var canMore = true.obs;
+
+//   @override
+//   void onInit() {
+//     
+//     super.onInit();
+//     dateTime.value = WMSUtil.getCurrentDate();
+//     EasyLoadingUtil.showLoading();
+//     requestData();
+//   }
+
+//   // 请求数据
+//   void requestData() {
+//     HttpServices.getinstoreOrderList(
+//         pageSize: pageSize.toString(),
+//         pageNum: pageNum.toString(),
+//         date: dateTime.value,
+//         success: (data,total) {
+//           EasyLoadingUtil.hidden();
+//           if(data.length == total){
+//             canMore.value = false;
+//           }else{
+//             canMore.value = true;
+//           }
+//           if(pageNum == 1){
+//             dataSource.value = data;
+//           }else{
+//             dataSource.addAll(data);
+//           }
+//           update();
+
+//         },
+//         error: (error) {
+//           EasyLoadingUtil.hidden();
+//           ToastUtil.showMessage(message: error.message);
+//         });
+//   }
+
+//   Future<void> onRefresh() async {
+//     pageNum = 1;
+//     requestData();
+//   }
+
+//   Future<void> onLoad() async {
+//     pageNum += 1;
+//     requestData();
+//   }
+
+//   // 打开日期选择器
+//   void openPicker(BuildContext context) {
+//     setUpWidget(
+//       context,
+//       PickerTimeWidget(
+//         item: dateTime.value,
+//         callback: (String data) {
+//           dateTime.value = data;
+//           requestData();
+//         },
+//       ),
+//     );
+//   }
+
+//   @override
+//   void onClose() {
+//     
+//     super.onClose();
+//     EasyLoadingUtil.popHidden();
+//   }
+// }

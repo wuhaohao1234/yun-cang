@@ -1,0 +1,104 @@
+// 增加无主单
+import 'dart:io';
+
+import 'package:get/get.dart';
+import 'package:wms/common/pages/wms_camera_page.dart';
+import 'package:wms/configs/app_global_config.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+
+class ENCreateWzdPageController extends GetxController {
+  final String mailNo;
+
+  var images = RxList<File>();
+
+  ENCreateWzdPageController(this.mailNo);
+
+  // 取消按钮事件处理
+  void onTapCancelBtnHandle() {
+    Get.back();
+  }
+
+  // 完成按钮事件处理
+  void onTapCommitBtnHandle() {
+    if(images.length == 0){
+      request();
+    }else{
+      uploadImage();
+    }
+  }
+
+  // 拍照
+  void onTapAddImageHandle() {
+    Get.to(()=>WMSCameraPage()).then((value) {
+      List temp = value;
+      temp?.forEach((element) {
+        images.add(element);
+      });
+    });
+  }
+
+  // 删除照片
+  void onTapDelArticleNumberImage(int index) {
+    if (images.length > 0) {
+      images.removeAt(index);
+    }
+  }
+
+  uploadImage() async {
+    EasyLoadingUtil.showLoading();
+    int count = 0;
+    String ownerlessImg = '';
+    HttpServices.requestOss(
+        dir: AppGlobalConfig.imageType3,
+        success: (data) {
+          print(data.toJson().toString());
+          for (int i = 0; i < images.length; i++) {
+            File imaeFlie = images[i];
+            String path = imaeFlie.path;
+            var imageName = path.substring(path.lastIndexOf("/") + 1, path.length);
+            HttpServices.upLoadImage(
+                file: images[i],
+                model: data,
+                success: (imageUrl) {
+                  count++;
+                  print(imageUrl.toString());
+                  ownerlessImg += imageUrl;
+                  ownerlessImg += ';';
+                  if (count == images.length) {
+                    ownerlessImg = ownerlessImg.substring(0, ownerlessImg.length - 1);
+                    print(ownerlessImg);
+                    request(ownerlessImg: ownerlessImg);
+                  }
+                },
+                error: (error) {
+                  count++;
+                  if (count == images.length) {}
+                  print(error.toString());
+                  EasyLoadingUtil.hidden();
+                  ToastUtil.showMessage(message: '图片上传失败');
+                });
+          }
+        },
+        error: (error) {
+          EasyLoadingUtil.hidden();
+          print(error.toString());
+        });
+  }
+
+  // 发送生成无主单请求
+  void request({String ownerlessImg}) {
+    HttpServices.enCreateWzd(
+        mailNo: mailNo,
+        ownerlessImg: ownerlessImg,
+        success: (data) {
+          EasyLoadingUtil.hidden();
+          Get.back();
+        },
+        error: (error) {
+          EasyLoadingUtil.hidden();
+          ToastUtil.showMessage(message: error.message);
+        });
+  }
+}

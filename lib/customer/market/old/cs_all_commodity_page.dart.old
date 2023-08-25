@@ -1,0 +1,54 @@
+// /*
+// * 客户端-集市模块-所有在售
+// * */
+// import 'package:wms/customer/common.dart'; //页面通用依赖集合
+// import 'package:wms/customer/market/market_all_detail_page.dart';
+// import 'package:wms/views/customer/market/market_cell_widget.dart';
+// import 'package:wms/views/customer/market/market_grid_cell_widget.dart';
+// import 'cs_all_commodity_page_controller.dart.old';
+
+// class CSAllCommodityPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     print('qw2309r934r894732798');
+//     CSAllCommodityPageController pageController =
+//         Get.put(CSAllCommodityPageController());
+
+//     return Container(
+//         child: ScrollConfiguration(
+//             behavior: JKOverScrollBehavior(),
+//             child: Obx(() => RefreshView(
+//                 header: MaterialHeader(
+//                   valueColor: AlwaysStoppedAnimation(Colors.black),
+//                 ),
+//                 onRefresh: pageController.onRefresh,
+//                 onLoad:
+//                     pageController.canMore.value ? pageController.onLoad : null,
+//                 child: pageController.dataSource.length != 0
+//                     ? GridView.builder(
+//                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//                             crossAxisCount: 2, //横轴三个子widget
+//                             childAspectRatio: 1.0 //宽高比为1时，子widget
+//                             ),
+//                         itemBuilder: (context, index) {
+//                           return GestureDetector(
+//                             onTap: () {
+//                               Get.to(
+//                                 () => MarketAllDetailPage(
+//                                   spuId: pageController.dataSource[index].spuId,
+//                                 ),
+//                               );
+//                             },
+//                             child: MarketGridCellWidget(
+//                               model: pageController.dataSource[index],
+//                             ),
+//                           );
+//                         },
+//                         itemCount: pageController.dataSource.length,
+//                       )
+//                     : Container(
+//                         padding: EdgeInsets.symmetric(vertical: 100),
+//                         alignment: Alignment.center,
+//                         child: WMSText(content: '暂无数据～'))))));
+//   }
+// }

@@ -1,0 +1,92 @@
+/*
+* 客户端-仓储管理模块-异常件列表页面Cell
+* */
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:wms/models/storage/chuku_model.dart';
+import 'package:wms/models/ycj_model.dart';
+import 'package:wms/utils/wms_util.dart';
+
+class StorageDckCellWidget extends StatelessWidget {
+  final  model;
+
+  const StorageDckCellWidget({Key key, this.model}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(top: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      color: Colors.grey[100],
+      child: Column(
+        children: [
+          buildRowWidget(
+              iconData: Icons.car_repair,
+              title: '出库单号：',
+              content: model?.wmsOutStoreName ?? ''),
+          buildRowWidget(
+              iconData: Icons.insert_drive_file,
+              title: '物品数量：',
+              content: model?.skuTotal.toString() ?? ''),
+          buildRowWidget(
+              iconData: Icons.calendar_today_rounded,
+              title: '创建时间：',
+              content: model?.createTime ?? ''),
+          buildRowWidget(
+              iconData: Icons.insert_drive_file,
+              title: '仓库：',
+              content: model?.depotName ?? ''),
+          buildRowWidget(
+              iconData: Icons.insert_drive_file,
+              title: '出库模式：',
+              content: model?.logisticsName ?? ''),
+        ],
+      ),
+    );
+  }
+
+  Widget buildRowWidget({IconData iconData, String title, String content}) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        children: [
+          Icon(
+            iconData,
+            size: 18.sp,
+          ),
+          SizedBox(
+            width: 8.w,
+          ),
+          Text(
+            title,
+            style: TextStyle(fontSize: 14.sp),
+          ),
+          SizedBox(
+            width: 8.w,
+          ),
+          Expanded(
+            child: Text(
+              content,
+              style: TextStyle(fontSize: 14.sp),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget stateWidget({String title, Color bgColor}) {
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20.r), color: bgColor),
+      padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 8.w),
+      child: Center(
+        child: Text(
+          title ?? '',
+          style: TextStyle(color: Colors.white, fontSize: 12.sp),
+        ),
+      ),
+    );
+  }
+}

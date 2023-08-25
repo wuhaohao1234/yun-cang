@@ -1,0 +1,557 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:wms/common/baseWidgets/wms_button.dart';
+import 'package:wms/common/baseWidgets/wms_refresh_view.dart';
+import 'package:wms/common/baseWidgets/wms_shipping_table.dart';
+import 'package:wms/common/baseWidgets/wms_text.dart';
+import 'package:wms/common/pages/photo_view_page.dart';
+import 'package:wms/configs/app_style_config.dart';
+import 'package:wms/models/forSaleDetialList_model.dart';
+import 'package:wms/models/market/market_all_detail_model.dart';
+import 'package:wms/views/customer/market/mk_detail_top_widget.dart';
+
+import 'market_my_commodity_page_controller.dart';
+
+class MarketMyDetailPage extends StatefulWidget {
+  MarketMyDetailPage({Key key, this.spuId}) : super(key: key);
+  final num spuId;
+
+  @override
+  _MarketMyDetailPageState createState() => _MarketMyDetailPageState();
+}
+
+class _MarketMyDetailPageState extends State<MarketMyDetailPage> {
+  final MarketMyCommodityPageController pageController =
+      Get.put(MarketMyCommodityPageController());
+
+  @override
+  void initState() {
+  
+    pageController.setSpuId(widget.spuId);
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0.0,
+        centerTitle: true,
+        title: WMSText(
+          content: '单品在售',
+          size: AppStyleConfig.navTitleSize,
+        ),
+        actions: [
+          Obx(
+            () => TextButton(
+              onPressed: pageController.onTapChangeModel,
+              child: WMSText(
+                content: pageController.isDefault.value ? '切换明细' : '切换详情',
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Obx(
+        () => Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Stack(
+            alignment: AlignmentDirectional.topCenter,
+            children: [
+              RefreshView(
+                header: MaterialHeader(
+                  valueColor: AlwaysStoppedAnimation(Colors.black),
+                ),
+                onRefresh: pageController.onRefresh,
+                child: ListView(
+                  children: [
+                    buildTopWidget(pageController),
+                    Visibility(
+                      visible: pageController.isDefault.value,
+                      child: Column(
+                        children: [
+                          buildSizeListWidget(pageController),
+                          buildSoldInInventory(),
+                        ],
+                      ),
+                    ),
+                    Visibility(
+                      visible: !pageController.isDefault.value,
+                      child: Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            buildSizeWarp(pageController),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8.h),
+                              child: WMSText(
+                                content: '在售列表',
+                                bold: true,
+                              ),
+                            ),
+                            buildDataTable(context),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Visibility(
+                visible: !pageController.isDefault.value,
+                child: Positioned(
+                  bottom: 20.h,
+                  child: WMSButton(
+                    title: '下架',
+                    callback: () => pageController.onTapCommitHandle(context),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTopWidget(MarketMyCommodityPageController pageController) {
+    return MKdetailTopWidget(
+      imagePath: pageController.dataModel.value?.picturePath ?? '-',
+      name: pageController.dataModel.value?.commodityName ?? '-',
+      color: pageController.dataModel.value?.color ?? '-',
+      brand: pageController.dataModel.value?.brandNameCn ?? '-',
+      articleNumber: pageController.dataModel.value?.stockCode ?? '-',
+      total: pageController.dataModel.value?.qty,
+    );
+  }
+
+  Widget buildSizeListWidget(MarketMyCommodityPageController pageController) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Column(
+        children: [
+          Container(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                children: [
+                  WMSText(
+                    content: '价格配置',
+                    size: 14,
+                    bold: true,
+                  ),
+                  WMSText(
+                    content: '（瑕疵件价格设置请切换明细页单独配置）',
+                    size: 13,
+                    color: Colors.grey,
+                  ),
+                ],
+              )),
+          SizedBox(height: 8.h),
+          buildSizeWarp(pageController),
+          buildMarketOffer(pageController),
+          buildDWOffer(pageController),
+          SizedBox(
+            height: 10.h,
+          ),
+          Visibility(
+            visible: pageController.dwzdj.value.length > 0,
+            child: Row(
+              children: [
+                WMSText(
+                  content: '得物最低价：',
+                  size: 13,
+                ),
+                WMSText(
+                  content: '${pageController.dwzdj.value}',
+                  color: Colors.redAccent,
+                  size: 13,
+                  bold: true,
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget buildSizeWarp(MarketMyCommodityPageController pageController) {
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: Obx(
+        () => Wrap(
+          children: buildSizeList(pageController.dataModel.value.childrenList),
+        ),
+      ),
+    );
+  }
+
+  Widget buildMarketOffer(MarketMyCommodityPageController pageController) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 1,
+            color: Colors.grey[200],
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          WMSText(
+            content: '集市价格',
+            size: 12,
+            bold: true,
+          ),
+          SizedBox(
+            width: 8.w,
+          ),
+          Expanded(
+            child: TextField(
+              controller: pageController.appPriceC,
+              style: TextStyle(fontSize: 13.sp),
+              decoration: InputDecoration(
+                hintText: '请输入价格',
+                border: InputBorder.none,
+                hintStyle: TextStyle(fontSize: 13.sp),
+              ),
+            ),
+          ),
+          WMSButton(
+            width: 80.w,
+            height: 24.h,
+            bgColor: AppStyleConfig.enThemColor,
+            title: '出价',
+            callback: () => pageController.onTapMarketOfferHandle(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildDWOffer(MarketMyCommodityPageController pageController) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 1,
+            color: Colors.grey[200],
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          WMSText(
+            content: '得物价格',
+            size: 12,
+            bold: true,
+          ),
+          SizedBox(
+            width: 8.w,
+          ),
+          Expanded(
+            child: TextField(
+              controller: pageController.dwPriceC,
+              style: TextStyle(fontSize: 13.sp),
+              decoration: InputDecoration(
+                hintText: '输入价格（¥）',
+                border: InputBorder.none,
+                hintStyle: TextStyle(fontSize: 13.sp),
+              ),
+            ),
+          ),
+          WMSButton(
+            width: 80.w,
+            height: 24.h,
+            bgColor: AppStyleConfig.enThemColor,
+            title: '出价',
+            callback: () => pageController.onTapDWOfferHandle(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> buildSizeList(List<SizeModel> list) {
+    List<Widget> widgets = [];
+    list?.forEach((element) {
+      widgets.add(buildSizeItemWidget(element));
+    });
+
+    return widgets;
+  }
+
+  Widget buildSizeItemWidget(SizeModel model) {
+    return GestureDetector(
+      onTap: () {
+        pageController.setSkuId(model.skuId);
+      },
+      child: Container(
+        width: 50.w,
+        height: 50.w,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(5.r)),
+          border: pageController.skuId.value == model.skuId
+              ? Border.all(width: 2.0, color: Colors.black)
+              : null,
+          color: Colors.grey[200],
+        ),
+        margin: EdgeInsets.only(right: 8.w, bottom: 8.h),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            WMSText(
+              content: '${model.size}',
+              size: 14,
+              bold: true,
+              color: Colors.black,
+            ),
+            SizedBox(height: 4.h),
+            WMSText(
+              content: '${model.qty}',
+              size: 14,
+              bold: true,
+              color: Colors.grey,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildSoldInInventory() {
+    return Container(
+      margin: EdgeInsets.only(right: 8.w, bottom: 8.h),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            alignment: Alignment.centerLeft,
+            child: WMSText(
+              content: '价格表',
+              size: 14,
+              bold: true,
+            ),
+          ),
+          SizedBox(
+            height: 8.h,
+          ),
+          Container(
+            child: Table(
+                border: TableBorder.all(width: 1.0, color: Colors.grey[100]),
+                children: buildTableChildren()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<TableRow> buildTableChildren() {
+    List<TableRow> children = [];
+    children.add(buildTitles());
+    children.addAll(buildTableRows());
+    return children;
+  }
+
+  TableRow buildTitles() {
+    List<Widget> widgets = [];
+    List<String> titles = ['尺码'];
+
+    // 写入尺码
+    pageController.priceList.forEach((element) {
+      // print('element ${element.toJson()}');
+      titles.add(element.size);
+    });
+
+    titles.forEach((element) {
+      widgets.add(
+        TableCell(
+          child: Center(
+            child: buildTableCellWidget(
+              child: WMSText(content: element ?? ''),
+            ),
+          ),
+        ),
+      );
+    });
+    return TableRow(
+        decoration: BoxDecoration(color: Colors.grey[200]), children: widgets);
+  }
+
+  /// 价格表
+  List<TableRow> buildTableRows() {
+    List<TableRow> rows = [];
+    List<Map<String, String>> a = [
+      {"label": 'APP', "status": null}
+    ];
+    List<Map<String, String>> b = [
+      {"label": '得物', "status": null}
+    ];
+    pageController.priceList.forEach((element) {
+      a.add({
+        "label": element?.appPrice?.toString() ?? '--',
+        "status": element.status
+      });
+      b.add({
+        "label": element?.dwPrice?.toString() ?? '--',
+        "status": element.status
+      });
+    });
+    rows.add(TableRow(
+      children: a.map((e) => buildTableCell(e)).toList(),
+    ));
+    rows.add(TableRow(
+      children: b.map((e) => buildTableCell(e)).toList(),
+    ));
+    return rows;
+  }
+
+  TableCell buildTableCell(Map<String, String> item) {
+    return TableCell(
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 8.h),
+        child: Center(
+          child: Text(
+            '${item['label']}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 13.sp,
+                color: item['status'] == '1' ? Colors.red : null),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTableCellWidget({Widget child}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: child,
+    );
+  }
+
+  Widget buildShippingList() {
+    return WMSShippingTable();
+  }
+
+  Theme buildDataTable(BuildContext context) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: Theme.of(context)
+            .colorScheme
+            .copyWith(primary: Colors.black, onPrimary: Colors.white),
+      ),
+      child: Container(
+        color: Theme.of(context).colorScheme.onPrimary,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                minWidth: MediaQuery.of(context).size.width - 30.0),
+            child: DataTable(
+              headingRowColor: MaterialStateProperty.resolveWith<Color>(
+                  (Set<MaterialState> states) => Color(0xfff2f2f2)),
+              decoration: BoxDecoration(
+                  border: Border.all(width: 1, color: Colors.black12)),
+              headingTextStyle:
+                  TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
+              columnSpacing: 20.0,
+              columns: <DataColumn>[
+                // DataColumn(
+                //   label: Text('序号'),
+                // ),
+                DataColumn(
+                  label: Text('尺码'),
+                ),
+                DataColumn(
+                  label: Text('状态'),
+                ),
+                DataColumn(
+                  label: Text('图片'),
+                ),
+                DataColumn(
+                  label: Text('APP'),
+                ),
+                DataColumn(
+                  label: Text('毒'),
+                ),
+              ],
+              rows: List<DataRow>.generate(
+                pageController.forSaleDetialDataList?.length ?? 0,
+                (index) {
+                  ForSaleDetialListModel _data =
+                      pageController.forSaleDetialDataList[index];
+                  return DataRow(
+                    selected: _data?.selected ?? false,
+                    onSelectChanged: (selected) {
+                      setState(() {
+                        _data.selected = selected;
+                      });
+                      pageController.appForSaleDetialData(selected, _data);
+                    },
+                    cells: <DataCell>[
+                      // DataCell(Text('${index + 1}')),
+                      DataCell(Text(_data?.size ?? '')),
+                      DataCell(Text(_data?.status == '0' ? '正常' : '瑕疵')),
+                      DataCell(
+                        Container(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                child: Image.network(
+                                  _data?.imgUrl,
+                                  height: 48.0,
+                                  width: 48.0,
+                                ),
+                                behavior: HitTestBehavior.translucent,
+                                onTap: () {
+                                  print('图片1');
+                                  Get.to(() => PhotoViewPage(
+                                        images: [_data?.imgUrl], //传入图片list
+                                        index: index, //传入当前点击的图片的index
+                                        // heroTag: img,//传入当前点击的图片的hero tag （可选）
+                                      ));
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: _data?.status == '1'
+                              ? () => pageController.openDialog(
+                                  context, _data, index + 1)
+                              : null,
+                          child: Text(
+                            _data?.status == '1' && _data?.appPrice == null
+                                ? '出价'
+                                : '${_data?.appPrice ?? '--'}',
+                            style: TextStyle(
+                                color:
+                                    _data?.status == '1' ? Colors.red : null),
+                          ),
+                        ),
+                      ),
+                      DataCell(Text('${_data?.dwPrice ?? '--'}')),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

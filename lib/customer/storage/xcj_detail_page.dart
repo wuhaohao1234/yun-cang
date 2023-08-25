@@ -1,0 +1,170 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:wms/common/baseWidgets/wms_refresh_view.dart';
+import 'package:wms/common/baseWidgets/wms_text.dart';
+import 'package:wms/configs/app_style_config.dart';
+import 'package:wms/utils/jk_over_scroll_behavior.dart';
+import 'package:wms/views/common/section_title_widget.dart';
+
+import 'controllers/xcj_detail_page_controller.dart';
+
+//TODO: 买家 瑕疵件详情
+
+class XcjDetailPage extends StatelessWidget {
+  final num id;
+  final String title;
+
+  const XcjDetailPage({Key key, this.id, this.title = '瑕疵件详情'}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    XcjDetailPageController pageController = Get.put(XcjDetailPageController(id));
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        centerTitle: true,
+        elevation: 0.0,
+        title: WMSText(
+          content: title,
+          size: AppStyleConfig.navTitleSize,
+        ),
+      ),
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Container(
+            child: ScrollConfiguration(
+              behavior: JKOverScrollBehavior(),
+              child: RefreshView(
+                header: MaterialHeader(
+                  valueColor: AlwaysStoppedAnimation(Colors.black),
+                ),
+                onRefresh: pageController.onRefresh,
+                child: ListView(
+                  children: [
+                    SectionTitleWidget(
+                      title: '条形码',
+                    ),
+                    /*Obx(
+                      () => Container(
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              width: 1,
+                              color: Colors.grey[100],
+                            ),
+                          ),
+                        ),
+                        child: WMSText(
+                          content: '',
+                        ),
+                      ),
+                    ),*/
+                    SectionTitleWidget(
+                      title: 'SKU码',
+                    ),
+                    /*Obx(
+                      () => Container(
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              width: 1,
+                              color: Colors.grey[100],
+                            ),
+                          ),
+                        ),
+                        child: WMSText(
+                          content:  '',
+                        ),
+                      ),
+                    ),*/
+                    SectionTitleWidget(
+                      title: '货号照片',
+                    ),
+                    // buildArticleNumberImage(pageController),
+                    SectionTitleWidget(
+                      title: '商品照片',
+                    ),
+                    // buildItemsImage(pageController),
+                    SectionTitleWidget(
+                      title: '商品状态',
+                    ),
+                    // buildSpztWidget(pageController),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+// 货号照片
+// Widget buildArticleNumberImage(XcjDetailPageController pageController) {
+//   return Obx(() => WMSUploadImageWidget(
+//         canDelete: false,
+//         images: pageController.dataModel.value.itemImg?.split(';'),
+//         addCallBack: () {
+//           print('add =======');
+//           // pageController.onTapAddArticleNumberImage();
+//         },
+//         delCallBack: (index) {
+//           // pageController.onTapDelArticleNumberImage(index);
+//         },
+//       ));
+// }
+
+// 商品照片
+// Widget buildItemsImage(XcjDetailPageController pageController) {
+//   return Obx(() {
+//     return WMSUploadImageWidget(
+//       canDelete: false,
+//       images: pageController.dataModel.value.imgUrl?.split(';'),
+//       addCallBack: () {
+//         print('add =======');
+//         // pageController.onTapAddItemsImage();
+//       },
+//       delCallBack: (index) {
+//         // pageController.onTapDelItemsImage(index);
+//       },
+//     );
+//   });
+// }
+
+// 商品状态
+// Widget buildSpztWidget(XcjDetailPageController pageController) {
+//   return Obx(() {
+//     return Row(
+//       children: [
+//         Radio(
+//           value: '0',
+//           groupValue: pageController.dataModel.value.status,
+//           activeColor: Colors.blue,
+//           onChanged: (value) {},
+//         ),
+//         WMSText(
+//           content: '正常',
+//         ),
+//         SizedBox(
+//           width: 8.w,
+//         ),
+//         Radio(
+//           value: '1',
+//           groupValue: pageController.dataModel.value.status,
+//           activeColor: Colors.blue,
+//           onChanged: (value) {},
+//         ),
+//         WMSText(
+//           content: '瑕疵',
+//         ),
+//       ],
+//     );
+//   });
+// }
+}

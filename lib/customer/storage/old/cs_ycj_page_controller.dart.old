@@ -1,0 +1,83 @@
+// import 'package:flutter/cupertino.dart';
+// import 'package:get/get.dart';
+// import 'package:wms/common/baseWidgets/wv_picker_time.dart';
+// import 'package:wms/common/baseWidgets/wv_set_up_widget.dart';
+// import 'package:wms/models/ycj_model.dart';
+// import 'package:wms/network/http_services.dart';
+// import 'package:wms/utils/easy_loading_util.dart';
+// import 'package:wms/utils/toast_util.dart';
+
+// import '../../../utils/wms_util.dart';
+
+// class CSYcjPageController extends GetxController {
+//   int pageSize = 10;
+//   int pageNum = 1;
+//   RxString dataTime = ''.obs;
+//   var dataSource = RxList<YcjModel>();
+//   var canMore = true.obs;
+
+//   @override
+//   void onInit() {
+//     
+//     super.onInit();
+//     EasyLoadingUtil.showLoading();
+//     dataTime.value = WMSUtil.getCurrentDate();
+//     requestData();
+//   }
+
+//   void requestData() {
+//     HttpServices.getExceptionOrderList(
+//         date: dataTime.value,
+//         pageNum: pageNum.toString(),
+//         pageSize: pageSize.toString(),
+//         success: (data,total) {
+//           EasyLoadingUtil.hidden();
+//           if(data.length == total){
+//             canMore.value = false;
+//           }else{
+//             canMore.value = true;
+//           }
+//           if (pageNum == 1) {
+//             dataSource.value = data;
+//           } else {
+//             dataSource.addAll(data);
+//             update();
+//           }
+//         },
+//         error: (error) {
+//           EasyLoadingUtil.hidden();
+//           ToastUtil.showMessage(message: error.message);
+//         });
+//   }
+
+//   // 打开日期选择器
+//   void openPicker(BuildContext context) {
+//     setUpWidget(
+//       context,
+//       PickerTimeWidget(
+//         item: dataTime.value,
+//         callback: (String data) {
+//           dataTime.value = data;
+//           requestData();
+//         },
+//       ),
+//     );
+//   }
+
+//   Future<void> onRefresh() async {
+//     pageNum = 1;
+//     requestData();
+//   }
+
+//   Future<void> onLoad() async {
+//     pageNum += 1;
+//     requestData();
+//   }
+
+//   @override
+//   void onClose() {
+//     
+//     super.onClose();
+//     EasyLoadingUtil.popHidden();
+//   }
+// }

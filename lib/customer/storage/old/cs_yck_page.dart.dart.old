@@ -1,0 +1,79 @@
+// /*
+// * 客户端入-仓储管理模块-已出库列表页面
+// * */
+
+// import 'package:flutter/cupertino.dart';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:wms/common/baseWidgets/wms_date_section.dart';
+// import 'package:wms/common/baseWidgets/wms_refresh_view.dart';
+// import 'package:wms/common/baseWidgets/wms_text.dart';
+// import 'package:wms/configs/app_style_config.dart';
+// import 'package:wms/customer/storage/cs_yck_detail_page.dart';
+// import 'package:wms/utils/jk_over_scroll_behavior.dart';
+// import 'package:wms/views/customer/storage/storage_yck_cell_widget.dart';
+
+// import 'old/cs_yck_page_controller.dart.old';
+
+// class CSYckPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     CSYckPageController pageController = Get.put(CSYckPageController());
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         elevation: 0.0,
+//         centerTitle: true,
+//         title: WMSText(
+//           content: '已出库',
+//           size: AppStyleConfig.navTitleSize,
+//         ),
+//       ),
+//       body: Container(
+//         child: ScrollConfiguration(
+//           behavior: JKOverScrollBehavior(),
+//           child: Column(
+//             children: [
+//               Obx(
+//                 () => WMSDateSection(
+//                   data: pageController.dateTime.value,
+//                   callback: () => pageController.openPicker(context),
+//                 ),
+//               ),
+//               Expanded(
+//                 child: Obx(
+//                   () => RefreshView(
+//                     header: MaterialHeader(
+//                       valueColor: AlwaysStoppedAnimation(Colors.black),
+//                     ),
+//                     onRefresh: pageController.onRefresh,
+//                     onLoad: pageController.canMore.value
+//                         ? pageController.onLoad
+//                         : null,
+//                     child: ListView.builder(
+//                       itemBuilder: (context, index) {
+//                         return GestureDetector(
+//                           onTap: () {
+//                             Get.to(() => CSYckDetailPage(
+//                                   wmsOutStoreId: pageController
+//                                       .dataSource[index].wmsOutStoreId
+//                                       .toString(),
+//                                 ));
+//                           },
+//                           child: StorageYckCellWidget(
+//                             model: pageController.dataSource[index],
+//                           ),
+//                         );
+//                       },
+//                       itemCount: pageController.dataSource.length,
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }

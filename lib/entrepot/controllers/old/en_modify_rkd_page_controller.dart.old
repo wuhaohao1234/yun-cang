@@ -1,0 +1,143 @@
+import 'package:get/get.dart';
+import 'dart:io';
+import 'package:wms/common/pages/wms_camera_page.dart';
+import 'package:wms/configs/app_global_config.dart';
+import 'package:wms/models/entrepot/ruku/en_rkd_detail_model.dart';
+import 'package:wms/models/entrepot/en_sku_detail_model.dart';
+import 'package:wms/models/oss_model.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+
+class ENModifyRkdPageController extends GetxController {
+  final ENRkdDetailModel dataModel;
+
+  var skusList = RxList<ENSkusModel>();
+  var imageList = RxList<String>();
+  num orderId;
+
+  ENModifyRkdPageController(this.dataModel);
+
+  @override
+  void onInit() {
+    
+    super.onInit();
+    skusList.value = [];
+    skusList.value = dataModel.skuDetail.skus ?? [];
+    imageList.value = dataModel.instoreOrderImg?.split(';') ?? [];
+    orderId = dataModel.orderId;
+  }
+
+  // 点击添加商品按钮事件处理
+  void onTapAddWaresBtnHandle() {
+    // Get.to(()=>
+    //   ENAddWaresPage(
+    //     orderId: orderId.toString(),
+    //   ),
+    // ).then((value) {
+    //   if (value != null) {
+    //     skusList.insert(0, value);
+    //     update();
+    //   }
+    // });
+  }
+
+  // 拍完照上传图片
+  void reuqestOssModel({List<File> imageList}) async {
+    EasyLoadingUtil.showLoading();
+    HttpServices.requestOss(
+        dir: AppGlobalConfig.imageType3,
+        success: (data) async {
+          var result =
+              await uploadImagesList(images: imageList, ossModel: data);
+          EasyLoadingUtil.hidden();
+          if (result == false) {
+            ToastUtil.showMessage(message: '上传图片失败');
+          } else {}
+        },
+        error: (error) {
+          EasyLoadingUtil.hidden();
+          print(error.toString());
+        });
+
+    // 上传商品照片
+  }
+
+  // 上传照片
+  Future<bool> uploadImagesList({List<File> images, OssModel ossModel}) async {
+    for (int i = 0; i < images.length; i++) {
+      String path = await HttpServices.asyncUpLoadImage(
+        model: ossModel,
+        file: images[i],
+      );
+      if (path == null) {
+        return false;
+      }
+      imageList.add(path);
+    }
+    return true;
+  }
+
+  // 添加商品照片
+  void onTapAddItemsImage() {
+    Get.to(()=>WMSCameraPage()).then((value) {
+      List temp = value;
+      reuqestOssModel(imageList: temp);
+    });
+  }
+
+// 删除商品照片
+  void onTapDelItemsImage(int index) {
+    imageList.removeAt(index);
+    update();
+  }
+
+  // 点击保存按钮
+  void requestSave() {
+    // 发送提交入库单请求
+    EasyLoadingUtil.showLoading();
+    HttpServices.commitSku(
+        orderId: orderId,
+        success: () {
+          ToastUtil.showMessage(message: '提交成功');
+          EasyLoadingUtil.hidden();
+          Get.back(result: true);
+        },
+        error: (e) {
+          EasyLoadingUtil.hidden();
+          EasyLoadingUtil.showMessage(message: e.message);
+        });
+  }
+
+  // 发送上传照片（快递面单/货单）
+  void requestUploadImageWithOrderId() {
+    if (imageList.length == 0) {
+      ToastUtil.showMessage(message: '请上传照片');
+      return;
+    }
+
+    String instoreOrderImg = '';
+    imageList.forEach((element) {
+      instoreOrderImg += element;
+      instoreOrderImg += ';';
+    });
+    instoreOrderImg = instoreOrderImg.substring(0, instoreOrderImg.length - 1);
+    HttpServices.editPrepareOrder(
+        instoreOrderImg: instoreOrderImg,
+        orderId: orderId.toString(),
+        success: (result) {
+          requestSave();
+        },
+        error: (e) {
+          EasyLoadingUtil.hidden();
+          ToastUtil.showMessage(message: e.message);
+        });
+  }
+
+  @override
+  void onClose() {
+    
+    super.onClose();
+    EasyLoadingUtil.popHidden();
+  }
+}

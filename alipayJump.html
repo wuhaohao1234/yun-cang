@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.bootcss.com/vConsole/3.2.0/vconsole.min.js"></script>
+    <script src="https://gw.alipayobjects.com/as/g/h5-lib/alipayjsapi/3.1.1/alipayjsapi.min.js"></script>
+    <script src="https://cloud1-0gl9hb6e80f0dd06-1311751833.tcloudbaseapp.com/jquery.js"></script>
+    <title>奢品云仓-支付宝支付</title>
+  </head>
+  <body>
+    <p style="text-align: center">支付宝支付</p>
+    <div style="width: 100%; height: 20%; text-align: center">
+      <h3 id="paySucceed" style="display: none; color: green">
+        支付成功, 请返回App
+      </h3>
+      <h3 id="payFailed" style="display: none; color: red">
+        支付失败, 请返回App
+      </h3>
+    </div>
+
+    <!-- <button id="turn-off">关闭当前页面</button> -->
+    <!-- <button id="goback">Go back to yuncang</button> -->
+    <div
+      style="
+        position: absolute;
+        bottom: 0px;
+        width: 100%;
+        text-align: center;
+        padding-bottom: 10%;
+      "
+    >
+      <p style="text-align: center; color: gray">支付版本: 0.0.37</p>
+    </div>
+  </body>
+  <script>
+    //var vConsole = new window.VConsole();
+  </script>
+  <script type="application/javascript">
+    // 调试时可以通过在页面定义一个元素，打印信息，使用alert方法不够优雅
+    function log(obj) {
+      $("#result").append(obj).append(" ").append("<br />");
+    }
+    $(document).ready(function () {
+      // When clicking the goback button, exit the current app
+      //document
+      // .querySelector("#turn-off")
+      //.addEventListener("click", function () {
+      // AlipayJSBridge.call("exitApp");
+      //});
+
+      $("#goback").click(function () {
+        console.log("跳入云仓");
+        let newLocation = new URL("yuncang_wms://index");
+        window.location = newLocation;
+      });
+
+      // 页面载入完成后即唤起收银台
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      const prepayOrderId = urlParams.get("prepay_id");
+      console.log("prepayOrderId is ", prepayOrderId);
+      if (prepayOrderId !== null && prepayOrderId !== undefined) {
+        tradePay(prepayOrderId);
+      } else {
+        alert("订单号错误, 请返回App.");
+      }
+    });
+    // 由于js的载入是异步的，所以可以通过该方法，当AlipayJSBridgeReady事件发生后，再执行callback方法
+    function ready(callback) {
+      if (window.AlipayJSBridge) {
+        callback && callback();
+      } else {
+        document.addEventListener("AlipayJSBridgeReady", callback, false);
+      }
+    }
+    function tradePay(tradeNO) {
+      ready(function () {
+        // 通过传入交易号唤起快捷调用方式(注意tradeNO大小写严格)
+        AlipayJSBridge.call(
+          "tradePay",
+          {
+            tradeNO: tradeNO,
+          },
+          function (data) {
+            log(JSON.stringify(data));
+            if ("9000" == data.resultCode) {
+              console.log("支付成功");
+              $("#paySucceed").show();
+            } else {
+              $("#payFailed").show();
+            }
+          }
+        );
+      });
+    }
+  </script>
+</html>

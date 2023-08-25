@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+import 'package:wms/common/baseWidgets/wms_refresh_view.dart';
+import 'package:wms/models/market/market_wares_model.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+import 'package:wms/views/customer/market/market_cell_widget.dart';
+
+class CSKcSubPage extends StatefulWidget {
+  final int categoryId;
+  final int type;
+  final bool selected;
+  final Function(MarketWaresModel) selectCallBack;
+  final Function(List<MarketWaresModel>) loadCallBack;
+  final Map<int, Map<int, List<MarketWaresModel>>> selectCommodityData;
+  final Function(dynamic) onChangedAllCheckbox;
+  final Map<int, Map<String, dynamic>> selectSpuIds;
+
+  CSKcSubPage({
+    Key key,
+    this.categoryId,
+    this.type,
+    this.selected = false,
+    this.selectCallBack,
+    this.loadCallBack,
+    this.selectCommodityData,
+    this.onChangedAllCheckbox,
+    this.selectSpuIds,
+  }) : super(key: key);
+
+  @override
+  _CSKcSubPageState createState() => _CSKcSubPageState();
+}
+
+class _CSKcSubPageState extends State<CSKcSubPage> with AutomaticKeepAliveClientMixin{
+  // CSKcSubPageController pageController;
+  @override
+  bool get wantKeepAlive =>false;
+  List<MarketWaresModel> dataSource = [];
+  bool selected;
+
+  @override
+  void initState() {
+  
+    EasyLoadingUtil.showLoading();
+    requestData();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshView(
+      header: MaterialHeader(valueColor: AlwaysStoppedAnimation(Colors.black)),
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        itemBuilder: (context, index) {
+          int _spuId = dataSource[index].spuId;
+          bool _selected = widget.selectSpuIds[_spuId] == null ? false : widget.selectSpuIds[_spuId]['selected'];
+          return MarketCellWidget(
+            model: dataSource[index],
+            // selected: isSelected(widget.selectCommodityData[_spuId], dataSource[index].qty),
+            selected: _selected,
+            type: widget.type,
+            selectCallBack: widget.selectCallBack,
+            onChangedAllCheckbox: (v) {
+              widget.onChangedAllCheckbox({
+                "selected": v == null ? false : v,
+                'spuId': _spuId,
+                'model': dataSource[index],
+              });
+            },
+          );
+        },
+        itemCount: dataSource.length,
+      ),
+    );
+  }
+
+  void requestData() {
+    // TODO:补滚动加载
+    HttpServices.getInventoryList(
+      pageSize: 100,
+      pageNum: 1,
+      categoryId: widget.categoryId,
+      success: (data,total) {
+        EasyLoadingUtil.hidden();
+        List<MarketWaresModel> _data = data.map((e) {
+          e.categoryId = widget.categoryId;
+          return e;
+        }).toList();
+
+        widget.loadCallBack(_data);
+        setState(() {
+          dataSource = _data;
+        });
+      },
+      error: (error) {
+        EasyLoadingUtil.hidden();
+        ToastUtil.showMessage(message: error.message);
+      },
+    );
+  }
+
+  // 渲染对应 钩子
+  bool isSelected(Map<int, List<MarketWaresModel>> selectCommodityData, int qty) {
+    Map<int, List<MarketWaresModel>> _data = selectCommodityData;
+    if (_data == null) {
+      return false;
+    }
+    List<int> keys = _data.keys.toList();
+    List<bool> _selected = [];
+    for (var _k in keys) {
+      _data[_k].forEach((element) {
+        if (element.selected == true) {
+          _selected.add(true);
+        }
+      });
+    }
+
+    if (_selected.length == qty) {
+      return true;
+    } else if (_selected.length == 0) {
+      return false;
+    }
+
+    return null;
+  }
+
+  Future<void> onRefresh() async {
+    requestData();
+  }
+}

@@ -1,0 +1,47 @@
+// 物品详情
+import 'package:get/get.dart';
+import 'package:wms/models/entrepot/en_wares_model.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+
+class XcjDetailPageController extends GetxController {
+  final num id;
+
+  XcjDetailPageController(this.id);
+
+  var dataModel = ENWaresModel().obs;
+
+  @override
+  void onInit() {
+    
+    super.onInit();
+    EasyLoadingUtil.showLoading();
+    requestData();
+  }
+
+  void requestData() {
+    HttpServices.enPrepareSkuDetail(
+        id: id,
+        success: (data) {
+          EasyLoadingUtil.hidden();
+
+          dataModel.value = data;
+        },
+        error: (error) {
+          EasyLoadingUtil.hidden();
+          ToastUtil.showMessage(message: error.message);
+        });
+  }
+
+  Future onRefresh() async {
+    requestData();
+  }
+
+  @override
+  void onClose() {
+    
+    super.onClose();
+    EasyLoadingUtil.hidden();
+  }
+}

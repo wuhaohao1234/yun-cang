@@ -1,0 +1,193 @@
+// import 'package:flutter/material.dart';
+// import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:get/get.dart';
+// import 'package:wms/common/baseWidgets/wms_state_label.dart';
+// import 'package:wms/common/baseWidgets/wms_text.dart';
+// import 'package:wms/configs/app_style_config.dart';
+// import 'package:wms/entrepot/pages/en_logistics_page.dart';
+// import 'package:wms/utils/jk_over_scroll_behavior.dart';
+// import 'package:wms/views/customer/common/section_title_widget.dart';
+// import 'package:wms/views/customer/storage/cs_ckd_cell_good.dart';
+
+// import '../controllers/cs_dck_detail_page_controller.dart';
+// import '../controllers/cs_yck_detail_page_controller.dart';
+
+// class CSYckDetailPage extends StatelessWidget {
+//   final int prepareOrderId;
+
+//   const CSYckDetailPage({Key key, this.prepareOrderId}) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     CSYckDetailPageController pageController =
+//         Get.put(CSYckDetailPageController(prepareOrderId));
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         centerTitle: true,
+//         elevation: 0.0,
+//         title: WMSText(
+//           content: '已出库详情',
+//           size: AppStyleConfig.navTitleSize,
+//         ),
+//       ),
+//       body: Container(
+//         padding: EdgeInsets.symmetric(
+//           horizontal: 16.w,
+//         ),
+//         child: ScrollConfiguration(
+//           behavior: JKOverScrollBehavior(),
+//           child: ListView(
+//             children: [
+//               SectionTitleWidget(title: '基础信息'),
+//               Padding(
+//                   padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
+//                   child: infoSectionWidget(pageController)),
+//               SectionTitleWidget(title: '收件人信息'),
+//               buildAddressInfoWidget(pageController),
+//               SectionTitleWidget(title: '出仓物品清单'),
+//               Obx(
+//                 () => Container(
+//                     height: (pageController.goodList?.length ?? 0) * 100.h,
+//                     child: buildList(pageController)),
+//               )
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget infoSectionWidget(CSYckDetailPageController pageController) {
+//     return Obx(
+//       () => Container(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             infoItemWidget(
+//                 title: '出仓单号：',
+//                 content: '${pageController.dataModel.value.wmsOutStoreName}'),
+//             Row(
+//               children: [
+//                 Expanded(
+//                   child: infoItemWidget(
+//                       title: '快递单号：',
+//                       content:
+//                           '${pageController.dataModel.value.expressNumber}'),
+//                 ),
+//                 WMSStateLabel(
+//                   title: '物流轨迹',
+//                   callback: () => Get.to(
+//                     () => () => ENLogisticsPage(
+//                           dataCode:
+//                               pageController.dataModel.value.expressNumber,
+//                         ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             Row(
+//               children: [
+//                 Expanded(
+//                   child: infoItemWidget(title: '签收照片：', content: ''),
+//                 ),
+//                 WMSStateLabel(
+//                   title: '',
+//                   callback: () => Get.to(
+//                     () => () => ENLogisticsPage(
+//                           dataCode:
+//                               pageController.dataModel.value.expressNumber,
+//                         ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             infoItemWidget(
+//                 title: '提货码：',
+//                 content: '${pageController.dataModel.value.pickUpCode}'),
+//             infoItemWidget(
+//                 title: '出库时间：',
+//                 content: '${pageController.dataModel.value.outTime}'),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget infoItemWidget({String title, String content}) {
+//     return Padding(
+//       padding: EdgeInsets.only(top: 8.h),
+//       child: Row(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text(
+//             title ?? '',
+//             style: TextStyle(fontSize: 14.sp),
+//           ),
+//           Expanded(
+//             child: Text(
+//               content ?? '',
+//               style: TextStyle(fontSize: 14.sp),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget buildAddressInfoWidget(CSYckDetailPageController pageController) {
+//     return Obx(
+//       () => Container(
+//         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+//         decoration: BoxDecoration(
+//             borderRadius: BorderRadius.circular(10.r), color: Colors.grey[200]),
+//         child: Row(
+//           children: [
+//             Icon(
+//               Icons.location_on,
+//               color: Colors.red,
+//               size: 30.w,
+//             ),
+//             Expanded(
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Row(
+//                     children: [
+//                       WMSText(
+//                         content:
+//                             '${pageController.dataModel.value.consigneeName}',
+//                         bold: true,
+//                       ),
+//                       WMSText(
+//                         content:
+//                             '${pageController.dataModel.value.consigneePhone}',
+//                       ),
+//                     ],
+//                   ),
+//                   WMSText(
+//                       content: '${pageController.dataModel.value.consigneeProvince}' +
+//                           '${pageController.dataModel.value.consigneeCity}' +
+//                           '${pageController.dataModel.value.consigneeDistrict}' +
+//                           '${pageController.dataModel.value.consigneeAddress}'),
+//                 ],
+//               ),
+//             )
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   // 出仓物品清单
+//   Widget buildList(CSYckDetailPageController pageController) {
+//     return ListView.builder(
+//       itemBuilder: (context, index) {
+//         return CSDkdGoodCell(
+//           model: pageController.goodList[index],
+//         );
+//       },
+//       itemCount: pageController.goodList.length ?? 0,
+//     );
+//   }
+// }

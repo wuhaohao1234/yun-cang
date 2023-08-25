@@ -1,0 +1,374 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:wms/common/baseWidgets/wv_set_up_widget.dart';
+import 'package:wms/models/forSaleDetialList_model.dart';
+import 'package:wms/models/getJiShiPrice_model.dart';
+import 'package:wms/models/market/market_all_detail_model.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+
+import '../controllers/market_select_widget_view.dart';
+
+class MarketMyCommodityPageController extends GetxController {
+  num spuId;
+
+  MarketMyCommodityPageController();
+
+  // MarketMyCommodityPageController(this.spuId);
+
+  var dataModel = MarketAllDetailModel().obs;
+
+  var isDefault = true.obs; //  true详情 false 明细·
+
+  // 价格表
+  // RxList<SizeModel> priceList = RxList<SizeModel>();
+  RxList<GetJiShiPriceModel> priceList = RxList<GetJiShiPriceModel>();
+
+  // 再售列表
+  RxList<ForSaleDetialListModel> forSaleDetialDataList = RxList<ForSaleDetialListModel>();
+
+  // 勾选使用
+  Map<int, Map<int, List<ForSaleDetialListModel>>> selectForSaleDetialDataList = {};
+
+  // 每个sku下列表长度
+  Map<int, int> selectForSaleDetialDataLength = {};
+
+  // 得物最低价
+  var dwzdj = ''.obs;
+  //
+
+  //
+  RxInt skuId = 0.obs;
+
+  TextEditingController appPriceC;
+  TextEditingController dwPriceC;
+  TextEditingController priceC;
+
+  @override
+  void onInit() {
+    
+    super.onInit();
+    appPriceC = TextEditingController();
+    dwPriceC = TextEditingController();
+    priceC = TextEditingController();
+  }
+
+  void setSpuId(int id) {
+    spuId = id;
+    EasyLoadingUtil.showLoading();
+    requestData();
+  }
+
+  void requestData() {
+    // priceList.clear();
+    HttpServices.getMarketMyDetail(
+        spuId: spuId,
+        success: (model) {
+          EasyLoadingUtil.hidden();
+          dataModel.value = model;
+          // 设置第一个尺寸
+          skuId.value = model.childrenList[0].skuId;
+
+          forSaleDetialList();
+
+          getJiShiPrice(spuId);
+
+          // print('priceList ${priceList.length}');
+          // model.childrenList.forEach((element) {
+          //   print('element.toJson() ${element.toJson()}');
+          //   priceList.add(element);
+          //   // print('childdata ${element.toJson()}');
+          // });
+
+          // print('priceList ${priceList} ${priceList.length}');
+          // print('model.childrenList.toString() ${model.childrenList}');
+        },
+        error: (error) {
+          EasyLoadingUtil.hidden();
+          ToastUtil.showMessage(message: error.message);
+        });
+  }
+
+  Future<void> onRefresh() async {
+    requestData();
+  }
+
+  /// 下架弹出框
+  void onTapCommitHandle(BuildContext context) {
+    setUpWidget(
+      context,
+      MarketSelectWidgetPage(
+        data: dataModel.value.childrenList,
+        selectDataList: selectForSaleDetialDataList,
+        dataLength: selectForSaleDetialDataLength,
+        callBack: forSaleDetialList, // 回调刷新数据
+      ),
+    );
+  }
+
+  /// 查询集市价格表
+  void getJiShiPrice([int _spuId]) {
+    int id = _spuId ?? spuId;
+    EasyLoadingUtil.showLoading();
+    requestDwzdj(skuId.toString());
+    HttpServices.getJiShiPrice(
+      params: {
+        "pageSize": 20,
+        "pageNum": 1,
+        "spuId": id,
+      },
+      success: (res,total) {
+        priceList.value = res;
+        EasyLoadingUtil.hidden();
+      },
+      error: (error) {
+        EasyLoadingUtil.hidden();
+        ToastUtil.showMessage(message: error.message);
+      },
+    );
+  }
+
+  // 获取得物最低价
+  void requestDwzdj(String skuId) {
+
+    print('获取得物最低价 = ${skuId}');
+    HttpServices.dwzdj(skuId: skuId, success: (value) {
+      print('获取得物最低价 == ' + value.toString());
+      if(value != null){
+        dwzdj.value = value;
+      }
+    }, error: (e) {
+      print('获取得物最低价失败');
+    });
+  }
+
+  // 切换模式 详情 - 明细
+  void onTapChangeModel() {
+    isDefault.toggle();
+    if(isDefault.value == false){
+      forSaleDetialList();
+    }
+
+  }
+
+  // 设置在售单品集市价格
+  void setSaleSkuAppPrice({int skuId, String appPrice}) {
+    if (appPrice.length == 0) {
+      ToastUtil.showMessage(message: '请输入价格');
+      return;
+    }
+    EasyLoadingUtil.showLoading();
+    HttpServices.setSaleSkuAppPrice(
+      skuId: skuId,
+      appPrice: num.parse(appPrice),
+      success: () {
+        EasyLoadingUtil.hidden();
+        getJiShiPrice();
+        forSaleDetialList();
+        ToastUtil.showMessage(message: '设置成功');
+      },
+      error: (error) {
+        EasyLoadingUtil.hidden();
+        ToastUtil.showMessage(message: error.message);
+      },
+    );
+  }
+
+
+  // 修改在售商品app的价格
+  void modifySalePrice({int id, String appPrice}) {
+    if (appPrice.length == 0) {
+      ToastUtil.showMessage(message: '请输入价格');
+      return;
+    }
+    EasyLoadingUtil.showLoading();
+    HttpServices.editForeSaleSku(
+      id: id,
+      appPrice: num.parse(appPrice),
+      success: () {
+        EasyLoadingUtil.hidden();
+        getJiShiPrice();
+        forSaleDetialList();
+        ToastUtil.showMessage(message: '设置成功');
+      },
+      error: (error) {
+        EasyLoadingUtil.hidden();
+        ToastUtil.showMessage(message: error.message);
+      },
+    );
+  }
+
+  // 点击集市出价
+  void onTapMarketOfferHandle() {
+    if (appPriceC.text.length == 0) {
+      ToastUtil.showMessage(message: '请输入价格');
+      return;
+    }
+    EasyLoadingUtil.showLoading();
+    HttpServices.setSaleSkuAppPrice(
+      skuId: skuId.value,
+      appPrice: int.parse(appPriceC.text),
+      success: () {
+        EasyLoadingUtil.hidden();
+        getJiShiPrice();
+        ToastUtil.showMessage(message: '设置成功');
+      },
+      error: (error) {
+        EasyLoadingUtil.hidden();
+        ToastUtil.showMessage(message: error.message);
+      },
+    );
+  }
+
+  // 点击得物出价
+  void onTapDWOfferHandle() {
+    if (dwPriceC.text.length == 0) {
+      ToastUtil.showMessage(message: '请输入价格');
+      return;
+    }
+    if (dwPriceC.text[dwPriceC.text.length - 1] != '9') {
+      ToastUtil.showMessage(message: '得物价格必须以9结尾');
+      return;
+    }
+
+    EasyLoadingUtil.showLoading();
+    HttpServices.setSaleSkuDWPrice(
+      skuId: skuId.value,
+      dwPrice: num.parse(dwPriceC.text),
+      success: () {
+        EasyLoadingUtil.hidden();
+        getJiShiPrice();
+        ToastUtil.showMessage(message: '设置成功');
+      },
+      error: (error) {
+        EasyLoadingUtil.hidden();
+        ToastUtil.showMessage(message: error.message);
+      },
+    );
+  }
+
+  /// 查看再售列表
+  void forSaleDetialList() {
+    selectForSaleDetialDataLength = {};
+    EasyLoadingUtil.showLoading();
+    HttpServices.forSaleDetialList(
+      query: skuId.value.toString(),
+      success: (data,total) {
+        data.forEach((element) {
+          // 已经勾选数据
+          Map<int, List<ForSaleDetialListModel>> skuIdDataMap = selectForSaleDetialDataList[element.skuId];
+          if (skuIdDataMap != null) {
+            skuIdDataMap.forEach((key, value) {
+              if (element.id == key) {
+                element.selected = true;
+              }
+            });
+          }
+        });
+
+        // 记录每个sku下的数据长度
+        selectForSaleDetialDataLength[skuId.value] = data.length;
+
+        EasyLoadingUtil.hidden();
+        forSaleDetialDataList.value = data;
+      },
+      error: (error) {
+        EasyLoadingUtil.hidden();
+        ToastUtil.showMessage(message: error.message);
+      },
+    );
+  }
+
+  /// 添加数据到内存中 给选择下架商品 使用
+  void appForSaleDetialData(bool state, ForSaleDetialListModel data) {
+    if (selectForSaleDetialDataList[skuId] == null) {
+      selectForSaleDetialDataList[skuId.value] = {};
+    }
+    if (selectForSaleDetialDataList[skuId.value][data.id] == null) {
+      selectForSaleDetialDataList[skuId.value][data.id] = [];
+    }
+    if (state) {
+      selectForSaleDetialDataList[skuId][data.id].add(data);
+    } else {
+      selectForSaleDetialDataList[skuId].remove(data.id);
+    }
+    print(selectForSaleDetialDataList);
+  }
+
+  /// 设置价格弹出框
+  void openDialog(BuildContext context, ForSaleDetialListModel data, int i) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) => wvDialog(
+        widget: GestureDetector(
+          onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 20.0),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Text(
+                    '序号$i APP价格',
+                    style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(height: 10.0),
+                TextField(
+                  controller: priceC,
+                  autofocus: true,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    hintText: '请输入价格',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
+                  ),
+                ),
+                SizedBox(height: 10.0),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      print(priceC.text);
+                      modifySalePrice(
+                        id: data.id,
+                        appPrice: priceC.text,
+                      );
+                      FocusScope.of(context).requestFocus(FocusNode());
+                      priceC.text = '';
+                      Get.back();
+                    },
+                    child: Text('提交'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 设置sku
+  void setSkuId(int id) {
+    skuId.value = id;
+    requestDwzdj(id.toString());
+    forSaleDetialList();
+  }
+
+  @override
+  void onClose() {
+    
+    super.onClose();
+    EasyLoadingUtil.popHidden();
+    dwPriceC?.dispose();
+    appPriceC?.dispose();
+    priceC?.dispose();
+  }
+}

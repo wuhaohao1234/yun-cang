@@ -1,0 +1,85 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:wms/common/baseWidgets/wms_text.dart';
+import 'package:wms/common/baseWidgets/wv_address_widget.dart';
+import 'package:wms/common/baseWidgets/wv_checklist_widget.dart';
+import 'package:wms/configs/app_style_config.dart';
+
+/// Create by bigv on 21-7-17
+/// Description:
+class OutboundOrderPage extends StatefulWidget {
+  @override
+  _OutboundOrderPageState createState() => _OutboundOrderPageState();
+}
+
+class _OutboundOrderPageState extends State<OutboundOrderPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: true,
+        title: WMSText(
+          content: '出库单',
+          size: AppStyleConfig.navTitleSize,
+        ),
+      ),
+      body: ListView(
+        padding: EdgeInsets.all(20.w),
+        children: [
+          Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WMSText(
+                  content: '基础信息',
+                  bold: true,
+                  size: 12.sp,
+                ),
+                SizedBox(height: 10.w),
+                WMSText(
+                  content: '出库单号: YBRKD2021052301',
+                  size: 12.sp,
+                ),
+                SizedBox(height: 10.w),
+                WMSText(
+                  content: '创建时间: 2020-05-15 12:00',
+                  size: 12.sp,
+                )
+              ],
+            ),
+          ),
+          SizedBox(height: 20.w),
+          Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WMSText(
+                  content: '收件人信息',
+                  bold: true,
+                  size: 12.sp,
+                ),
+                AddressWidget(),
+              ],
+            ),
+          ),
+          SizedBox(height: 20.w),
+          Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WMSText(
+                  content: '出库物品清单',
+                  bold: true,
+                  size: 12.sp,
+                ),
+                ChecklistWidget(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

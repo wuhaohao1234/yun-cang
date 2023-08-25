@@ -1,0 +1,41 @@
+// import 'package:get/get.dart';
+// import 'package:wms/models/storage/ckd_detail_model.dart';
+// import 'package:wms/models/storage/cs_dck_model.dart';
+// import 'package:wms/models/sku_list_item.dart';
+// import 'package:wms/network/http_services.dart';
+// import 'package:wms/utils/easy_loading_util.dart';
+// import 'package:wms/utils/toast_util.dart';
+
+// class CSYckDetailPageController extends GetxController {
+//   final int prepareOrderId;
+
+//   CSYckDetailPageController(this.prepareOrderId);
+
+//   var dataModel = CsChuKuModel().obs;
+//   @override
+//   void onInit() {
+//     
+//     super.onInit();
+//     EasyLoadingUtil.showLoading();
+//     requestData();
+//   }
+
+//   void requestData() {
+//     HttpServices.csTemporaryExistenceListDetail(
+//         prepareOrderId: prepareOrderId,
+//         success: (data) {
+//           EasyLoadingUtil.hidden();
+//           dataModel.value = data;
+//         },
+//         error: (error) {
+//           EasyLoadingUtil.hidden();
+//           ToastUtil.showMessage(message: error.message);
+//         });
+//   }
+
+//   @override
+//   void onClose() {
+//     
+//     super.onClose();
+//   }
+// }

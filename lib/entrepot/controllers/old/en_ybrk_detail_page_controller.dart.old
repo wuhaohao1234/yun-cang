@@ -1,0 +1,57 @@
+import 'package:get/get.dart';
+import 'package:wms/entrepot/pages/old/en_create_rkd_page.dart.old';
+import 'package:wms/models/entrepot/ruku/en_ybrk_model.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+
+class ENYbrkDetailPageController extends GetxController {
+  final num orderId;
+
+  var dataModel = ENYbrkModel().obs;
+
+  ENYbrkDetailPageController(this.orderId);
+
+  @override
+  void onInit() {
+    super.onInit();
+    EasyLoadingUtil.showLoading();
+    requestData();
+  }
+
+  // 请求数据
+  requestData() {
+    HttpServices.enPrepareOrderDetail(
+        orderId: orderId,
+        success: (data) {
+          EasyLoadingUtil.hidden();
+          dataModel.value = data;
+        },
+        error: (error) {
+          EasyLoadingUtil.hidden();
+          ToastUtil.showMessage(message: error.message);
+        });
+  }
+
+  Future<void> onRefresh() async {
+    requestData();
+  }
+
+  void onTapCreateYbrkdBtnHandle() {
+    Get.to(
+      () => () => ENCreateRkdPage(
+            model: dataModel.value,
+          ),
+    ).then((value) {
+      if (value == true) {
+        Get.back(result: true);
+      }
+    });
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    EasyLoadingUtil.popHidden();
+  }
+}

@@ -1,0 +1,6 @@
+package com.yuncang.wms
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity() {
+}

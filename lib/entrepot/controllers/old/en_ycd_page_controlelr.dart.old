@@ -1,0 +1,56 @@
+import 'package:get/get.dart';
+import 'package:wms/models/entrepot/ruku/en_ycd_model.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+
+class ENYcdPageController extends GetxController {
+  num pageNum = 1;
+
+  var dataSource = RxList<ENYcdModel>();
+
+  var canMore = false.obs;
+
+  @override
+  void onInit() {
+    
+    super.onInit();
+    EasyLoadingUtil.showLoading();
+    requestData();
+  }
+
+  requestData() {
+    HttpServices.enExceptionOrderList(
+        pageSize: '10',
+        pageNum: pageNum.toString(),
+        success: (data,total) {
+          EasyLoadingUtil.hidden();
+          if (data.length == total) {
+            // 可以加载更多
+            canMore.value = false;
+          } else {
+            // 不可以加载更多
+            canMore.value = true;
+          }
+          if (pageNum == 1) {
+            dataSource.value = data;
+          } else {
+            dataSource.addAll(data);
+          }
+        },
+        error: (error) {
+          EasyLoadingUtil.hidden();
+          ToastUtil.showMessage(message: error.message);
+        });
+  }
+
+  Future<void> onRefresh() async {
+    pageNum = 1;
+    requestData();
+  }
+
+  Future<void> onLoad() async {
+    pageNum += 1;
+    requestData();
+  }
+}

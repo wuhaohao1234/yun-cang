@@ -1,0 +1,146 @@
+/*
+* 客户端入-仓储管理模块-入库单详情页面
+* */
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:wms/common/baseWidgets/wms_image_wrap.dart';
+import 'package:wms/common/baseWidgets/wms_table_widget.dart';
+import 'package:wms/common/baseWidgets/wms_text.dart';
+import 'package:wms/configs/app_style_config.dart';
+import 'package:wms/customer/storage/controllers/cs_good_detail_page_controller.dart';
+import 'package:wms/customer/storage/xcj_detail_page.dart';
+import 'package:wms/utils/jk_over_scroll_behavior.dart';
+import 'package:wms/utils/wms_util.dart';
+import 'package:wms/views/customer/common/section_title_widget.dart';
+
+import 'cs_rkd_detail_page_controller.dart.old';
+import '../cs_good_detail_page.dart';
+
+class CSRkdDetailPage extends StatelessWidget {
+  final String instoreOrderId;
+
+  const CSRkdDetailPage({Key key, this.instoreOrderId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    CSRkdDetailPageController pageController =
+        Get.put(CSRkdDetailPageController(instoreOrderId));
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        elevation: 0.0,
+        title: WMSText(
+          content: '入库单详情',
+          size: AppStyleConfig.navTitleSize,
+        ),
+      ),
+      body: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+        ),
+        child: ScrollConfiguration(
+          behavior: JKOverScrollBehavior(),
+          child: ListView(
+            children: [
+              SectionTitleWidget(title: '基础信息'),
+              Padding(
+                padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
+                child: infoSectionWidget(pageController),
+              ),
+              WMSImageWrap(
+                imagePaths: [],
+              ),
+              SectionTitleWidget(title: '预约照片'),
+              Obx(
+                () => WMSImageWrap(
+                  imagePaths: WMSUtil.segmentationImageUrl(
+                      pageController.dataModel.value.prepareImgUrl),
+                ),
+              ),
+              SectionTitleWidget(
+                title: '上传照片',
+                subTitle: '(快递面单/货单)',
+              ),
+              Obx(
+                () => WMSImageWrap(
+                  imagePaths: WMSUtil.segmentationImageUrl(
+                      pageController.dataModel.value.instoreOrderImg),
+                ),
+              ),
+              SectionTitleWidget(title: '入库清单'),
+              Obx(
+                () => WMSTableWidget(
+                  eNSkuDetailModel: pageController.dataModel?.value?.skuDetail,
+                  callback: (id) {
+                    Get.to(
+                      () => () => CSGoofDetailPage(
+                            id: id,
+                          ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget infoSectionWidget(CSRkdDetailPageController pageController) {
+    return Container(
+      child: Obx(
+        () => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            infoItemWidget(
+                title: '入库单号：',
+                content: pageController.dataModel.value.inStoreOrderName ?? ''),
+            infoItemWidget(
+                title: '物流单号：',
+                content: pageController.dataModel.value.customerCode ?? ''),
+            infoItemWidget(
+                title: '预约数量：',
+                content: '${pageController.dataModel.value.skusTotal ?? 0}'),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //   infoItemWidget(title: '预约数量：', content: '12'),
+            //   WMSStateLabel( title:'查看预约单'),
+            // ],),
+            infoItemWidget(
+                title: '入库数量：',
+                content:
+                    '${pageController.dataModel.value.skusTotalFact ?? 0}'),
+            infoItemWidget(
+                title: '入库时间：',
+                content: pageController.dataModel.value.createTime ?? ''),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget infoItemWidget({String title, String content}) {
+    return Padding(
+      padding: EdgeInsets.only(top: 8.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title ?? '',
+            style: TextStyle(fontSize: 14.sp),
+          ),
+          Expanded(
+            child: Text(
+              content ?? '',
+              style: TextStyle(fontSize: 14.sp),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

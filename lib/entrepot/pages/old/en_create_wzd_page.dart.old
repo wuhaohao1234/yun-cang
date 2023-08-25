@@ -1,0 +1,85 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:wms/common/baseWidgets/wms_button.dart';
+import 'package:wms/common/baseWidgets/wms_info_row.dart';
+import 'package:wms/common/baseWidgets/wms_text.dart';
+import 'package:wms/common/baseWidgets/wms_upload_image_widget.dart';
+import 'package:wms/configs/app_style_config.dart';
+import 'package:wms/entrepot/controllers/old/en_create_wzd_page_controller.dart.old';
+import 'package:wms/views/common/section_title_widget.dart';
+
+class ENCreateWzdPage extends StatelessWidget {
+  final String mailNo;
+
+  const ENCreateWzdPage({Key key, this.mailNo}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    ENCreateWzdPageController pageController = Get.put(ENCreateWzdPageController(mailNo));
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0.0,
+        centerTitle: true,
+        title: WMSText(
+          content: '生成无主单',
+          size: AppStyleConfig.navTitleSize,
+        ),
+      ),
+      body: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Stack(
+          alignment: AlignmentDirectional.topCenter,
+          children: [
+            Column(
+              children: [
+                SectionTitleWidget(
+                  title: '基础信息',
+                ),
+                WMSInfoRow(
+                  title: '快递单号：',
+                  content: mailNo ?? '',
+                ),
+                SectionTitleWidget(
+                  title: '照片信息',
+                ),
+                Obx(() {
+                  return WMSUploadImageWidget(
+                    canDelete: true,
+                    images: pageController.images.value,
+                    addCallBack: pageController.onTapAddImageHandle,
+                    delCallBack: pageController.onTapDelArticleNumberImage,
+                  );
+                }),
+              ],
+            ),
+            Positioned(
+                bottom: 20.h,
+                child: Container(
+                  child: Row(
+                    children: [
+                      WMSButton(
+                        width: 160.w,
+                        title: '取消',
+                        bgColor: Colors.grey,
+                        callback: pageController.onTapCancelBtnHandle,
+                      ),
+                      SizedBox(
+                        width: 16.w,
+                      ),
+                      WMSButton(
+                        width: 160.w,
+                        title: '完成',
+                        callback: pageController.onTapCommitBtnHandle,
+                      ),
+                    ],
+                  ),
+                ))
+          ],
+        ),
+      ),
+    );
+  }
+}

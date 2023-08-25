@@ -1,0 +1,52 @@
+// /*
+// * 客户端-集市模块-我的在售
+// * */
+
+// import 'package:flutter/cupertino.dart';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:wms/common/baseWidgets/wms_refresh_view.dart';
+// import 'package:wms/customer/market/old/cs_my_commodity_page_controller.dart.old';
+// import 'package:wms/utils/jk_over_scroll_behavior.dart';
+// import 'package:wms/views/customer/market/market_cell_widget.dart';
+
+// import '../market_my_detail_page.dart';
+
+// class CSMyCommodityPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     CSMyCommodityPageController pageController =
+//         Get.put(CSMyCommodityPageController());
+
+//     return Container(
+//       child: ScrollConfiguration(
+//         behavior: JKOverScrollBehavior(),
+//         child: Obx(() => RefreshView(
+//               header: MaterialHeader(
+//                 valueColor: AlwaysStoppedAnimation(Colors.black),
+//               ),
+//               onRefresh: pageController.onRefresh,
+//               onLoad:
+//                   pageController.canMore.value ? pageController.onLoad : null,
+//               child: ListView.builder(
+//                 itemBuilder: (context, index) {
+//                   return GestureDetector(
+//                     onTap: () {
+//                       Get.to(
+//                         () => () => MarketMyDetailPage(
+//                               spuId: pageController.dataSource[index].spuId,
+//                             ),
+//                       );
+//                     },
+//                     child: MarketCellWidget(
+//                       model: pageController.dataSource[index],
+//                     ),
+//                   );
+//                 },
+//                 itemCount: pageController.dataSource.length,
+//               ),
+//             )),
+//       ),
+//     );
+//   }
+// }

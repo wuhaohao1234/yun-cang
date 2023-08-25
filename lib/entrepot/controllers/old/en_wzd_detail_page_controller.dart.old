@@ -1,0 +1,38 @@
+import 'package:get/get.dart';
+import 'package:wms/models/entrepot/ruku/en_ybrk_model.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+
+class ENWzdDetailPageController extends GetxController {
+  final int id;
+
+  var dataModel = ENYbrkModel().obs;
+
+  ENWzdDetailPageController(this.id);
+
+  @override
+  void onInit() {
+    super.onInit();
+    EasyLoadingUtil.showLoading();
+    requestData();
+  }
+
+  // 请求数据
+  requestData() {
+    HttpServices.enOwnerLessDetail(
+        id: id,
+        success: (data) {
+          EasyLoadingUtil.hidden();
+          dataModel.value = data;
+        },
+        error: (error) {
+          EasyLoadingUtil.hidden();
+          ToastUtil.showMessage(message: error.message);
+        });
+  }
+
+  Future<void> onRefresh() async {
+    requestData();
+  }
+}

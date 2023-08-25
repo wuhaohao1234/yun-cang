@@ -1,0 +1,139 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:wms/common/baseWidgets/wms_info_row.dart';
+import 'package:wms/common/baseWidgets/wms_refresh_view.dart';
+import 'package:wms/common/baseWidgets/wms_state_label.dart';
+import 'package:wms/common/baseWidgets/wms_text.dart';
+import 'package:wms/common/baseWidgets/wms_ycd_table_widget.dart';
+import 'package:wms/configs/app_style_config.dart';
+import 'package:wms/entrepot/controllers/old/en_ycd_detail_page_controller.dart.old';
+import 'package:wms/entrepot/pages/ruku/en_ybrk_detail_page.dart';
+import 'package:wms/entrepot/pages/old/xcj_detail_page.dart.old';
+import 'package:wms/utils/wms_util.dart';
+import 'package:wms/views/customer/common/section_title_widget.dart';
+
+class ENYcdDetailPage extends StatelessWidget {
+  final String orderId;
+
+  ENYcdDetailPage({Key key, this.orderId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    ENYcdDetailPageController pageController =
+        Get.put(ENYcdDetailPageController(orderId));
+
+    return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          centerTitle: true,
+          elevation: 0.0,
+          title: WMSText(
+            content: '异常单详情',
+            size: AppStyleConfig.navTitleSize,
+          ),
+        ),
+        body: Obx(
+          () => RefreshView(
+            header: MaterialHeader(
+              valueColor: AlwaysStoppedAnimation(Colors.black),
+            ),
+            onRefresh: pageController.onRefresh,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Column(
+                children: [
+                  SectionTitleWidget(
+                    title: '基础信息',
+                  ),
+                  Container(
+                    child: Column(
+                      children: [
+                        WMSInfoRow(
+                          title: '异常单号：',
+                          content:
+                              pageController.dataModel.value.exceptionOrderCode,
+                        ),
+                        WMSInfoRow(
+                          title: '异常类型：',
+                          content: WMSUtil.getExceptionTypeString(
+                              pageController.dataModel.value.exceptionType),
+                        ),
+                        WMSInfoRow(
+                          title: '物流单号：',
+                          content: pageController.dataModel.value.mailNo,
+                        ),
+                        WMSInfoRow(
+                          title: '客户代码：',
+                          content: pageController.dataModel.value.customerCode,
+                        ),
+                        WMSInfoRow(
+                          title: '预约数量：',
+                          content: pageController.dataModel.value.skusTotal
+                              .toString(),
+                        ),
+                        WMSInfoRow(
+                          title: '入库数量：',
+                          content:
+                              '${pageController.dataModel.value.skusTotalFact ?? 0}',
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: WMSInfoRow(
+                              title: '预约入库单：',
+                              content:
+                                  pageController.dataModel.value.orderIdName,
+                            )),
+                            Visibility(
+                              visible: pageController
+                                      .dataModel.value.prepareOrderId !=
+                                  null,
+                              child: WMSStateLabel(
+                                title: '查看',
+                                callback: () => Get.to(()=>() => ENYbrkDetailPage(
+                                    orderId: pageController
+                                        .dataModel.value.prepareOrderId)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: WMSInfoRow(
+                              title: '入库单：',
+                              content: pageController
+                                  .dataModel.value.instoreOrderCode,
+                            )),
+                            Visibility(
+                              visible: pageController
+                                      .dataModel.value.prepareOrderId !=
+                                  null,
+                              child: WMSStateLabel(
+                                title: '查看',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SectionTitleWidget(
+                    title: '瑕疵件',
+                  ),
+                  WMSYcdTableWidget(
+                    skuDetailModel: pageController.dataModel.value.skuDetai,
+                    callback: (id) => Get.to(()=>
+                      () => XcjDetailPage(
+                        id: id,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+}

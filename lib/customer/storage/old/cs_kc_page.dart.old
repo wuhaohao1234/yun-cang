@@ -1,0 +1,149 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:wms/common/baseWidgets/wms_text.dart';
+import 'package:wms/common/wv_config.dart';
+import 'package:wms/configs/app_style_config.dart';
+
+import '../common/kc_select_widget/kc_select_widget_logic.dart';
+import '../common/kc_select_widget/kc_select_widget_state.dart';
+import '../common/kc_tabbarview/kc_tabbarview_view.dart';
+
+// 客户端-仓储模块-库存页面
+class CSKcPage extends StatefulWidget {
+  // final CSKCPageController pageController = Get.put(CSKCPageController());
+
+  @override
+  _CSKcPageState createState() => _CSKcPageState();
+}
+
+class _CSKcPageState extends State<CSKcPage> {
+  final KcSelectWidgetLogic logic = Get.put(KcSelectWidgetLogic());
+  final KcSelectWidgetState state = Get.find<KcSelectWidgetLogic>().state;
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<KcSelectWidgetLogic>(builder: (_) {
+      return DefaultTabController(
+        length: state.dataSource.length,
+        child: Scaffold(
+          backgroundColor: Color(0xfff2f2f2),
+          appBar: AppBar(
+            elevation: 0,
+            centerTitle: true,
+            title: WMSText(
+              content: '库存',
+              size: AppStyleConfig.navTitleSize,
+            ),
+          ),
+          body: Column(
+            children: [
+              // Container(
+              //   margin: EdgeInsets.symmetric(vertical: 15.w),
+              //   child: Text('搜索'),
+              // ),
+              Container(
+                color: Color(0xfff2f2f2),
+                padding: EdgeInsets.symmetric(horizontal: 15.w),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        logic.onChangedAllCheckbox(state.allCheckbox);
+                      },
+                      child: Row(
+                        children: [
+                          Stack(
+                            children: [
+                              Checkbox(
+                                value: state.allCheckbox,
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                activeColor: Colors.black,
+                                checkColor: Colors.white,
+                                tristate: true,
+                                onChanged: (_) => logic.onChangedAllCheckbox(state.allCheckbox),
+                              ),
+                              Opacity(
+                                // 为了渲染顶部内容 不可以删掉 与Checkbox 同时存在
+                                opacity: 0,
+                                child: Text('${state.allCheckbox}'),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            '全选',
+                            style: TextStyle(color: Colors.black38),
+                          ),
+                        ],
+                      ),
+                      behavior: HitTestBehavior.translucent,
+                    ),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          style: WvConfig.elevatedButtonStyle,
+                          onPressed: logic.addForSale,
+                          child: Text('可售'),
+                        ),
+                        SizedBox(width: 10.w),
+                        ElevatedButton(
+                          style: WvConfig.elevatedButtonStyle,
+                          onPressed: logic.confirmOut,
+                          child: Text('出库'),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              TabBar(
+                indicatorColor: AppStyleConfig.themColor,
+                indicatorSize: TabBarIndicatorSize.label,
+                labelColor: AppStyleConfig.themColor,
+                unselectedLabelColor: Colors.black,
+                labelPadding: EdgeInsets.symmetric(horizontal: 0),
+                tabs: state.dataSource.map((model) => Tab(text: '${model.categoryName}(${model.qty})')).toList(),
+                onTap: logic.tabBarOnTap,
+              ),
+              Expanded(
+                child: TabBarView(
+                  // 点击tabbar清除掉勾选数据 所以禁用华东
+                  physics: new NeverScrollableScrollPhysics(),
+                  children: List.generate(
+                    state.dataSource.length,
+                    (index) => KcTabbarviewPage(
+                      categoryId: state.dataSource[index].categoryId,
+                      selectCommodityData: state.selectCommodityData,
+                      onChangedAllCheckboxChild: logic.onChangedAllCheckboxChild,
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+          floatingActionButton: Padding(
+            padding: EdgeInsets.only(bottom: 24.h),
+            child: FloatingActionButton(
+              heroTag: '',
+              child: Icon(Icons.insert_drive_file),
+              onPressed: () {
+                logic.onTapCommitHandle(context);
+                // 调获取出仓物品清单接口《/app/inventory/confirm_out/list》
+                // 弹出出仓物品清单接口
+              },
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    
+    print('dispose!!!');
+    state.spuSelectAllCheckbox = {};
+    super.dispose();
+  }
+}

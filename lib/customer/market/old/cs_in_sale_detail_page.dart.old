@@ -1,0 +1,17 @@
+/*
+* 客户端-集市模块-在售详情页面
+* */
+
+import 'package:flutter/material.dart';
+
+class CSInSaleDetailPage extends StatefulWidget {
+  @override
+  _CSInSaleDetailPageState createState() => _CSInSaleDetailPageState();
+}
+
+class _CSInSaleDetailPageState extends State<CSInSaleDetailPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}

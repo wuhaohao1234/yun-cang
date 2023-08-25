@@ -1,0 +1,43 @@
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:wms/entrepot/pages/scan/en_scan_result_page.dart';
+import 'package:wms/entrepot/pages/ruku/qianshou/en_ybrk_detail_page.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/toast_util.dart';
+
+class ManuallyEnterPageController extends GetxController {
+  TextEditingController textC = TextEditingController();
+
+  @override
+  void onInit() {
+    
+    super.onInit();
+  }
+
+  void onTapSubmitHandle() {
+    FocusManager.instance.primaryFocus.unfocus();
+
+    if (textC.text.length == 0) {
+      ToastUtil.showMessage(message: '请输入快递单号');
+      return;
+    }
+    HttpServices.enQueryByMailNo(
+        mailNo: textC.text,
+        success: (data, total) {
+          if (data != null && (data?.length ?? 0) > 0) {
+            Get.to(()=>
+              ENYbrkDetailPage(orderId: data.first.orderId),
+            );
+          } else {
+            Get.to(()=>ENScanResultPage(
+              mailNo: textC.text,
+            ));
+          }
+        },
+        error: (error) {
+          Get.to(()=>ENScanResultPage(
+            mailNo: textC.text,
+          ));
+        });
+  }
+}

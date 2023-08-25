@@ -1,0 +1,37 @@
+import 'package:get/get.dart';
+import 'package:wms/models/ware_house_model.dart';
+import 'package:wms/network/http_services.dart';
+import 'package:wms/utils/easy_loading_util.dart';
+import 'package:wms/utils/toast_util.dart';
+
+class StorageHomePageController extends GetxController {
+  var dataModel = WareHouseModel().obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    EasyLoadingUtil.showLoading();
+    requestData();
+  }
+
+  void requestData() {
+    HttpServices.warehouseNum(success: (data) {
+      EasyLoadingUtil.hidden();
+      print(data);
+      dataModel.value = data;
+    }, error: (error) {
+      EasyLoadingUtil.hidden();
+      ToastUtil.showMessage(message: error.message);
+    });
+  }
+
+  Future<void> onRefresh() async {
+    requestData();
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    EasyLoadingUtil.popHidden();
+  }
+}
